@@ -1,5 +1,5 @@
 from dotenv import load_dotenv
-from flask import Flask, request, abort
+from flask import Flask, request, abort, render_template
 from linebot import (
     LineBotApi, WebhookHandler
 )
@@ -178,7 +178,7 @@ def handle_audio_message(event):
 
 @app.route("/", methods=['GET'])
 def home():
-    return 'Hello World'
+    return render_template('index.html')
 
 
 if __name__ == "__main__":
