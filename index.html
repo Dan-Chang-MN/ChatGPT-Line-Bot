@@ -1,0 +1,417 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#06142d">
+  <meta name="description" content="銨鑫設計 Design Scout — 設計師媒合、工程級 AI 系統設計與全流程專案代理。">
+  <title>銨鑫設計 Design Scout｜精準導引創意</title>
+  <style>
+    /* Design tokens — update brand colors and type scale here. */
+    :root {
+      --navy: #00338d;
+      --blue: #3a9bdc;
+      --cyan: #56b4e9;
+      --space: #06142d;
+      --ink: #0a1830;
+      --paper: #f8fafc;
+      --white: #ffffff;
+      --muted: #65758b;
+      --line: rgba(7, 46, 100, 0.14);
+      --radius: 18px;
+      --content: 1200px;
+      --ease: cubic-bezier(.2, .8, .2, 1);
+    }
+
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      margin: 0;
+      color: var(--ink);
+      background: var(--paper);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans TC", sans-serif;
+      line-height: 1.6;
+      overflow-x: hidden;
+    }
+    body.menu-open { overflow: hidden; }
+    a { color: inherit; text-decoration: none; }
+    button, input, textarea, select { font: inherit; }
+    button, a { -webkit-tap-highlight-color: transparent; }
+    img { display: block; width: 100%; height: 100%; object-fit: cover; }
+    :focus-visible { outline: 3px solid var(--cyan); outline-offset: 3px; }
+
+    .container { width: min(calc(100% - 48px), var(--content)); margin-inline: auto; }
+    .section { padding-block: clamp(88px, 10vw, 150px); }
+    .eyebrow { color: var(--blue); font-size: .72rem; font-weight: 700; letter-spacing: .2em; }
+    .section-title { margin: 18px 0 0; font-size: clamp(2.4rem, 5vw, 4.75rem); line-height: 1.12; letter-spacing: -.055em; font-weight: 600; }
+    .section-heading { display: flex; justify-content: space-between; align-items: end; gap: 48px; margin-bottom: 64px; }
+    .section-heading > p { max-width: 360px; margin: 0; color: var(--muted); }
+    .button {
+      min-height: 48px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 28px;
+      padding: 12px 22px;
+      border: 0;
+      border-radius: 4px;
+      color: var(--white);
+      background: linear-gradient(120deg, var(--navy), var(--cyan));
+      font-weight: 700;
+      cursor: pointer;
+      transition: transform .25s var(--ease), box-shadow .25s var(--ease);
+    }
+    .button:hover { transform: translateY(-2px); box-shadow: 0 14px 34px rgba(22, 119, 189, .28); }
+    .button--outline { color: var(--ink); background: transparent; border: 1px solid var(--line); }
+
+    /* Fixed glass navigation. Replace the inline .brand__mark SVG with your final logo asset. */
+    .site-header {
+      position: fixed;
+      inset: 0 0 auto;
+      z-index: 50;
+      height: 88px;
+      color: var(--white);
+      border-bottom: 1px solid rgba(255,255,255,.12);
+      transition: height .35s var(--ease), background .35s, backdrop-filter .35s;
+    }
+    .site-header.is-scrolled {
+      height: 72px;
+      background: rgba(6, 20, 45, .78);
+      -webkit-backdrop-filter: blur(18px) saturate(130%);
+      backdrop-filter: blur(18px) saturate(130%);
+    }
+    .site-header__inner { height: 100%; display: flex; align-items: center; gap: 36px; }
+    .brand { display: flex; align-items: center; gap: 12px; margin-right: auto; min-height: 44px; }
+    .brand__mark { width: 36px; height: 44px; flex: none; }
+    .brand__name { display: grid; line-height: 1.15; }
+    .brand__name strong { font-size: .9rem; letter-spacing: .08em; }
+    .brand__name small { margin-top: 5px; color: #91a9c6; font-size: .55rem; letter-spacing: .2em; }
+    .desktop-nav { display: flex; align-items: center; gap: clamp(18px, 2.2vw, 34px); }
+    .desktop-nav a { min-height: 44px; display: grid; place-items: center; color: #c4d0df; font-size: .8rem; }
+    .desktop-nav a:hover { color: var(--white); }
+    .header-actions { display: flex; align-items: center; gap: 12px; }
+    .header-actions .button { min-height: 44px; padding-block: 8px; font-size: .78rem; }
+    .menu-button { display: none; width: 48px; height: 48px; border: 0; background: transparent; color: white; cursor: pointer; }
+    .menu-button span { display: block; width: 24px; height: 1px; margin: 7px auto; background: currentColor; transition: transform .25s; }
+
+    /* Hero: native Canvas provides the animated compass without an external JS library. */
+    .hero { min-height: 820px; height: 100svh; position: relative; overflow: hidden; color: var(--white); background: var(--space); }
+    .hero::before {
+      content: ""; position: absolute; inset: 0; opacity: .2;
+      background-image: linear-gradient(rgba(98,190,240,.17) 1px, transparent 1px), linear-gradient(90deg, rgba(98,190,240,.17) 1px, transparent 1px);
+      background-size: 88px 88px;
+      -webkit-mask-image: linear-gradient(90deg, #000, transparent 82%); mask-image: linear-gradient(90deg, #000, transparent 82%);
+    }
+    #compass-canvas { position: absolute; inset: 0; width: 100%; height: 100%; }
+    .hero__inner { position: relative; z-index: 2; height: 100%; display: flex; flex-direction: column; justify-content: center; }
+    .hero__copy { width: min(720px, 66%); padding-top: 40px; }
+    .hero h1 { margin: 24px 0; font-size: clamp(3.4rem, 7vw, 6.7rem); line-height: 1.04; letter-spacing: -.07em; }
+    .hero h1 span { color: transparent; -webkit-text-stroke: 1px rgba(220,240,255,.62); }
+    .hero__lead { max-width: 540px; color: #aab9cc; font-size: 1rem; line-height: 1.9; }
+    .hero__actions { display: flex; align-items: center; gap: 16px; margin-top: 32px; }
+    .hero__text-link { min-height: 48px; padding: 12px 18px; border-bottom: 1px solid #526881; }
+    .metrics { position: absolute; z-index: 3; right: max(24px, calc((100vw - var(--content))/2)); bottom: 7vh; display: flex; border-top: 1px solid #29435f; }
+    .metric { min-width: 150px; padding: 18px 24px 0 0; }
+    .metric strong { font-size: 2rem; font-weight: 500; }
+    .metric sup { color: var(--cyan); }
+    .metric span { display: block; margin-top: 6px; color: #8294aa; font-size: .62rem; letter-spacing: .09em; }
+
+    .positioning { display: grid; grid-template-columns: 1fr 3fr; gap: 48px; border-bottom: 1px solid var(--line); }
+    .positioning__body { display: grid; grid-template-columns: 2fr 1fr; gap: 70px; }
+    .positioning__body p { align-self: end; margin: 0; color: var(--muted); }
+    .accent { color: var(--blue); }
+
+    .services { background: var(--white); }
+    .service-list { border-top: 1px solid var(--line); }
+    .service-card { display: grid; grid-template-columns: 70px 1fr 1.4fr; gap: 34px; padding: 38px 20px; border-bottom: 1px solid var(--line); transition: background .3s; }
+    .service-card:hover { background: #f3f9fd; }
+    .service-card__number { color: var(--muted); font-size: .72rem; }
+    .service-card h3 { margin: 0; font-size: clamp(1.4rem, 2vw, 2rem); line-height: 1.35; }
+    .service-card__detail { color: var(--muted); }
+    .service-card__tags { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 18px; }
+    .service-card__tags span { padding: 7px 10px; color: var(--navy); background: #eaf6fc; border-radius: 999px; font-size: .72rem; }
+
+    .process { color: #eaf5ff; background: var(--space); }
+    .process .section-heading > p { color: #8fa2ba; }
+    .process-grid { display: grid; grid-template-columns: repeat(4, 1fr); border-top: 1px solid #29415f; }
+    .process-step { padding: 40px 30px 52px; border-right: 1px solid #29415f; }
+    .process-step:last-child { border-right: 0; }
+    .process-step__number { color: #315473; font-size: 2.2rem; }
+    .process-step small { display: block; margin: 30px 0 10px; color: var(--cyan); letter-spacing: .18em; }
+    .process-step h3 { margin: 0 0 10px; }
+    .process-step p { color: #8da0b8; font-size: .85rem; }
+
+    .talent-toolbar { display: flex; gap: 4px; overflow-x: auto; margin-bottom: 36px; border-bottom: 1px solid var(--line); scrollbar-width: none; }
+    .filter-button { min-height: 48px; flex: none; padding: 12px 18px; border: 0; border-bottom: 2px solid transparent; color: var(--muted); background: transparent; cursor: pointer; }
+    .filter-button.is-active { color: var(--blue); border-color: var(--blue); }
+    .talent-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 46px 24px; }
+    .talent-card { min-width: 0; cursor: pointer; }
+    .talent-card[hidden] { display: none; }
+    .talent-card__image { height: 350px; overflow: hidden; background: #dce8f1; }
+    .talent-card__image img { filter: saturate(.72); transition: transform .6s var(--ease), filter .6s; }
+    .talent-card:hover img { transform: scale(1.035); filter: saturate(1); }
+    .talent-card small { display: block; margin-top: 18px; color: var(--blue); letter-spacing: .15em; }
+    .talent-card h3 { margin: 7px 0 4px; font-size: 1.25rem; }
+    .talent-card p { margin: 0; color: var(--muted); font-size: .82rem; }
+
+    .contact { background: #eaf1f7; }
+    .contact__layout { display: grid; grid-template-columns: .9fr 1.1fr; gap: clamp(50px, 8vw, 110px); }
+    .contact__intro p { max-width: 380px; color: var(--muted); }
+    .form-card { padding: clamp(26px, 4vw, 48px); background: var(--white); box-shadow: 0 30px 70px rgba(0,40,90,.09); }
+    .form-tabs { display: flex; margin-bottom: 30px; border-bottom: 1px solid var(--line); }
+    .form-tab { min-height: 48px; flex: 1; border: 0; border-bottom: 2px solid transparent; color: var(--muted); background: transparent; cursor: pointer; }
+    .form-tab.is-active { color: var(--blue); border-color: var(--blue); }
+    .form-panel { display: none; }
+    .form-panel.is-active { display: grid; gap: 22px; }
+    .field { display: grid; gap: 8px; color: #536378; font-size: .78rem; }
+    .field input, .field textarea, .field select { min-height: 48px; width: 100%; padding: 10px 2px; border: 0; border-bottom: 1px solid #cbd7e0; color: var(--ink); background: transparent; border-radius: 0; }
+    .field textarea { min-height: 88px; resize: vertical; }
+    .budget-row { display: flex; justify-content: space-between; gap: 16px; }
+    input[type="range"] { accent-color: var(--blue); }
+    .form-panel .button { width: 100%; }
+
+    .site-footer { padding: 76px 0 30px; color: #dce9f6; background: #050c18; }
+    .footer-grid { display: grid; grid-template-columns: 1.3fr repeat(3, 1fr); gap: 40px; }
+    .footer-column { display: grid; align-content: start; gap: 10px; }
+    .footer-column strong { margin-bottom: 10px; color: var(--cyan); font-size: .68rem; letter-spacing: .16em; }
+    .footer-column a { min-height: 36px; color: #8fa1b8; font-size: .8rem; }
+    .footer-bottom { display: flex; justify-content: space-between; margin-top: 60px; padding-top: 22px; border-top: 1px solid #1e2c3e; color: #63758d; font-size: .68rem; }
+
+    /* IntersectionObserver adds .is-visible when an item enters the viewport. */
+    .reveal { opacity: 0; transform: translateY(30px); transition: opacity .8s var(--ease), transform .8s var(--ease); }
+    .reveal.is-visible { opacity: 1; transform: none; }
+    .toast { position: fixed; right: 24px; bottom: 24px; z-index: 100; padding: 16px 22px; color: white; background: var(--navy); transform: translateY(120px); opacity: 0; transition: .35s var(--ease); }
+    .toast.is-visible { transform: none; opacity: 1; }
+
+    @media (max-width: 960px) {
+      .desktop-nav, .header-actions { display: none; }
+      .menu-button { display: block; }
+      .site-header.menu-active .desktop-nav { position: fixed; inset: 72px 0 0; display: flex; flex-direction: column; align-items: stretch; gap: 0; padding: 24px; background: rgba(6,20,45,.98); }
+      .site-header.menu-active .desktop-nav a { min-height: 58px; justify-items: start; border-bottom: 1px solid rgba(255,255,255,.1); font-size: 1rem; }
+      .hero__copy { width: 78%; }
+      .positioning, .positioning__body { grid-template-columns: 1fr; }
+      .process-grid { grid-template-columns: repeat(2, 1fr); }
+      .process-step:nth-child(2) { border-right: 0; }
+      .talent-grid { grid-template-columns: repeat(2, 1fr); }
+      .contact__layout { grid-template-columns: 1fr; }
+      .footer-grid { grid-template-columns: 1.5fr 1fr 1fr; }
+      .footer-grid .footer-column:last-child { grid-column: 2; }
+    }
+
+    @media (max-width: 640px) {
+      .container { width: min(calc(100% - 40px), var(--content)); }
+      .section { padding-block: 78px; }
+      .section-heading { display: block; margin-bottom: 42px; }
+      .section-heading > p { margin-top: 22px; }
+      .site-header { height: 72px; }
+      .hero { min-height: 760px; height: 100svh; }
+      .hero__copy { width: 100%; padding-bottom: 140px; }
+      .hero h1 { font-size: clamp(3rem, 14vw, 4.4rem); }
+      .hero__lead { font-size: .92rem; }
+      .hero__actions { align-items: stretch; flex-direction: column; width: 100%; }
+      .hero__actions .button, .hero__text-link { min-height: 52px; }
+      .metrics { right: 20px; bottom: 24px; left: 20px; }
+      .metric { min-width: 0; flex: 1; padding-right: 8px; }
+      .metric strong { font-size: 1.35rem; }
+      .metric span { font-size: .52rem; }
+      .service-card { grid-template-columns: 42px 1fr; gap: 18px; padding-inline: 0; }
+      .service-card__detail { grid-column: 2; }
+      .process-grid, .talent-grid { grid-template-columns: 1fr; }
+      .process-step { border-right: 0; border-bottom: 1px solid #29415f; }
+      .talent-card__image { height: 420px; }
+      .form-card { margin-inline: -4px; }
+      .form-tab, .filter-button, .button, .menu-button { min-height: 48px; }
+      .footer-grid { grid-template-columns: 1fr 1fr; }
+      .footer-grid .footer-brand { grid-column: 1 / -1; }
+      .footer-grid .footer-column:last-child { grid-column: auto; }
+      .footer-bottom { flex-direction: column; gap: 10px; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      html { scroll-behavior: auto; }
+      *, *::before, *::after { animation-duration: .01ms !important; transition-duration: .01ms !important; }
+      .reveal { opacity: 1; transform: none; }
+    }
+  </style>
+</head>
+<body>
+  <header class="site-header" id="site-header">
+    <div class="site-header__inner container">
+      <a class="brand" href="#home" aria-label="銨鑫設計首頁">
+        <!-- LOGO REPLACEMENT: replace this inline SVG with <img src="your-logo.svg" alt="銨鑫設計">. -->
+        <svg class="brand__mark" viewBox="0 0 64 72" aria-hidden="true"><defs><linearGradient id="logo-gradient"><stop stop-color="#3a9bdc"/><stop offset="1" stop-color="#70d1ff"/></linearGradient></defs><path d="M53 13C43 7 23 5 12 14 2 22 7 36 20 39c8 2 22 1 25 10 3 8-7 13-17 11-7-1-12-4-17-7" fill="none" stroke="url(#logo-gradient)" stroke-width="7"/><path d="M48 29 10 69l26-35z" fill="#4aafe7"/></svg>
+        <span class="brand__name"><strong>銨鑫設計</strong><small>DESIGN SCOUT</small></span>
+      </a>
+      <nav class="desktop-nav" aria-label="主要導覽"><a href="#home">首頁</a><a href="#services">服務範疇</a><a href="#process">媒合架構</a><a href="#talent">精選人才</a><a href="#contact">聯絡諮詢</a></nav>
+      <div class="header-actions"><a href="#contact">加入我們</a><a class="button" href="#contact">尋找設計師 ↗</a></div>
+      <button class="menu-button" type="button" aria-label="開啟選單" aria-expanded="false"><span></span><span></span></button>
+    </div>
+  </header>
+
+  <main>
+    <section class="hero" id="home">
+      <canvas id="compass-canvas" aria-hidden="true"></canvas>
+      <div class="hero__inner container">
+        <div class="hero__copy reveal"><div class="eyebrow">DESIGN × TECHNOLOGY × CONSULTING</div><h1>精準導引創意<br><span>賦能工程未來</span></h1><p class="hero__lead">我們在設計與複雜系統之間建立座標。以專屬顧問、嚴選人才與工程級流程，讓每個創意都能精準抵達。</p><div class="hero__actions"><a class="button" href="#contact">啟動專案 ↗</a><a class="hero__text-link" href="#services">探索我們的能力 ↓</a></div></div>
+      </div>
+      <div class="metrics"><div class="metric"><strong data-count="300">0</strong><sup>+</sup><span>合作設計師</span></div><div class="metric"><strong data-count="98">0</strong><sup>%</sup><span>專案交付率</span></div><div class="metric"><strong data-count="100">0</strong><sup>%</sup><span>合約代理保障</span></div></div>
+    </section>
+
+    <section class="section container positioning"><div class="eyebrow reveal">01 — OUR POSITION</div><div class="positioning__body reveal"><h2 class="section-title">不只是媒合。<br>是為創意建立一套<span class="accent">可靠系統。</span></h2><p>Design Scout 將抽象需求轉譯為能被執行、衡量與交付的專案架構。從人才偵選、合約代理到品質審核，讓設計回歸價值本身。</p></div></section>
+
+    <section class="section services" id="services"><div class="container"><header class="section-heading reveal"><div><div class="eyebrow">02 — CORE CAPABILITIES</div><h2 class="section-title">跨域設計，<br>同一套精準標準。</h2></div><p>整合科技、品牌與視覺敘事，回應每一種商業挑戰。</p></header><div class="service-list"><article class="service-card reveal"><div class="service-card__number">01</div><h3>工程級軟體與<br>AI 系統設計</h3><div class="service-card__detail">從 CAD/CAM 工業介面、AI 算力模擬，到複雜 Dashboard 資訊架構。<div class="service-card__tags"><span>Industrial UX</span><span>AI Visualization</span><span>Dashboard</span></div></div></article><article class="service-card reveal"><div class="service-card__number">02</div><h3>品牌識別<br>與平面設計</h3><div class="service-card__detail">從策略定位到識別落地，建立能持續累積的完整品牌資產。<div class="service-card__tags"><span>Brand Strategy</span><span>Identity</span><span>Print</span></div></div></article><article class="service-card reveal"><div class="service-card__number">03</div><h3>商業電繪<br>與概念原畫</h3><div class="service-card__detail">以精緻視覺敘事，塑造角色、世界觀與具有傳播力的商業影像。<div class="service-card__tags"><span>Concept Art</span><span>Illustration</span><span>3D Motion</span></div></div></article></div></div></section>
+
+    <section class="section process" id="process"><div class="container"><header class="section-heading reveal"><div><div class="eyebrow">03 — HOW IT WORKS</div><h2 class="section-title">讓合作，沿著<br>正確軌道前進。</h2></div><p>全流程接案代理機制，替雙方守住品質與權益。</p></header><div class="process-grid"><article class="process-step reveal"><div class="process-step__number">01</div><small>DISCOVER</small><h3>需求診斷</h3><p>釐清目標、範疇與成功指標。</p></article><article class="process-step reveal"><div class="process-step__number">02</div><small>MATCH</small><h3>精準配對</h3><p>依風格、經驗與產業理解推薦人才。</p></article><article class="process-step reveal"><div class="process-step__number">03</div><small>MANAGE</small><h3>簽約與管理</h3><p>統一管理合約、時程與款項節點。</p></article><article class="process-step reveal"><div class="process-step__number">04</div><small>DELIVER</small><h3>品質交付</h3><p>專業品管與規格驗收，完整落地。</p></article></div></div></section>
+
+    <section class="section" id="talent"><div class="container"><header class="section-heading reveal"><div><div class="eyebrow">04 — SELECTED TALENTS</div><h2 class="section-title">我們尋找的，<br>是最對的設計師。</h2></div><p>每位人才皆經作品、經驗與協作能力三重審核。</p></header><div class="talent-toolbar reveal" role="group" aria-label="人才分類"><button class="filter-button is-active" data-filter="all">全部</button><button class="filter-button" data-filter="ai">AI 系統工程</button><button class="filter-button" data-filter="brand">品牌視覺</button><button class="filter-button" data-filter="art">商業電繪</button></div><div class="talent-grid">
+      <!-- IMAGE PLACEHOLDERS: replace each images.unsplash.com URL with an approved portfolio image. -->
+      <article class="talent-card reveal" data-category="ai"><div class="talent-card__image"><img src="https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=900&q=80" alt="AI 產品設計師 Evan Lin 形象照" loading="lazy"></div><small>AI SYSTEM / UX</small><h3>Evan Lin</h3><p>複雜系統資訊架構 · 8 年經驗</p></article>
+      <article class="talent-card reveal" data-category="brand"><div class="talent-card__image"><img src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=900&q=80" alt="品牌設計師 Iris Chen 形象照" loading="lazy"></div><small>BRAND / STRATEGY</small><h3>Iris Chen</h3><p>品牌策略與識別系統 · 10 年經驗</p></article>
+      <article class="talent-card reveal" data-category="art"><div class="talent-card__image"><img src="https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?auto=format&fit=crop&w=900&q=80" alt="概念藝術家 Kai Wu 形象照" loading="lazy"></div><small>CONCEPT / ART</small><h3>Kai Wu</h3><p>科幻場景與角色概念 · 7 年經驗</p></article>
+    </div></div></section>
+
+    <section class="section contact" id="contact"><div class="container contact__layout"><div class="contact__intro reveal"><div class="eyebrow">05 — START A PROJECT</div><h2 class="section-title">下一個座標，<br>從這裡開始。</h2><p>告訴我們你的目標，專屬顧問將於兩個工作日內與你聯繫。</p></div><div class="form-card reveal"><div class="form-tabs" role="tablist"><button class="form-tab is-active" data-tab="client" role="tab" aria-selected="true">企業案主發案</button><button class="form-tab" data-tab="designer" role="tab" aria-selected="false">設計師申請加入</button></div><form class="form-panel is-active" id="client-form"><label class="field">公司／聯絡人<input required autocomplete="name" placeholder="例：銨鑫科技／王先生"></label><label class="field">需求類別<select><option>工程 AI／系統 UI</option><option>品牌識別／平面設計</option><option>商業電繪／概念原畫</option></select></label><label class="field"><span class="budget-row">預期預算 <output id="budget-output">NT$ 300,000</output></span><input id="budget" type="range" min="50000" max="1000000" step="50000" value="300000"></label><label class="field">需求摘要<textarea placeholder="簡單描述專案目標與預計時程"></textarea></label><label class="field">聯絡 Email<input type="email" required autocomplete="email" placeholder="name@company.com"></label><button class="button" type="submit">送出專案需求 ↗</button></form><form class="form-panel" id="designer-form"><label class="field">姓名／專業稱謂<input required autocomplete="name" placeholder="例：王小明／Product Designer"></label><label class="field">作品集連結<input type="url" required placeholder="Behance／ArtStation／GitHub／個人網站"></label><label class="field">核心專長<select><option>工程系統與 UI/UX</option><option>品牌識別與平面</option><option>商業電繪與概念美術</option><option>3D 與動態設計</option></select></label><label class="field">聯絡 Email<input type="email" required autocomplete="email" placeholder="your@email.com"></label><button class="button" type="submit">提交人才審核 ↗</button></form></div></div></section>
+  </main>
+
+  <footer class="site-footer"><div class="container"><div class="footer-grid"><div class="footer-brand"><a class="brand" href="#home"><span class="brand__name"><strong>銨鑫設計</strong><small>DESIGN SCOUT</small></span></a></div><div class="footer-column"><strong>NAVIGATION</strong><a href="#services">服務範疇</a><a href="#process">媒合架構</a><a href="#talent">精選人才</a></div><div class="footer-column"><strong>CONNECT</strong><a href="mailto:hello@designscout.tw">Email ↗</a><a href="#">Instagram ↗</a><a href="#">LINE Official ↗</a></div><div class="footer-column"><strong>LEGAL</strong><a href="#">服務條款</a><a href="#">隱私權政策</a></div></div><div class="footer-bottom"><span>© 2026 DESIGN SCOUT</span><span>TAIPEI, TAIWAN · 25°02′N</span></div></div></footer>
+  <div class="toast" role="status" aria-live="polite">已收到資料，我們將儘快與你聯繫。</div>
+
+  <script>
+    // All behavior is native JavaScript; this file has no framework or library dependency.
+    const select = (selector, parent = document) => parent.querySelector(selector);
+    const selectAll = (selector, parent = document) => [...parent.querySelectorAll(selector)];
+
+    // Fade-in-up on entry and glass navigation after scrolling.
+    const revealObserver = new IntersectionObserver((entries, observer) => {
+      entries.forEach((entry) => {
+        if (!entry.isIntersecting) return;
+        entry.target.classList.add('is-visible');
+        observer.unobserve(entry.target);
+      });
+    }, { threshold: 0.12 });
+    selectAll('.reveal').forEach((element) => revealObserver.observe(element));
+
+    const siteHeader = select('#site-header');
+    const updateHeader = () => siteHeader.classList.toggle('is-scrolled', window.scrollY > 24);
+    window.addEventListener('scroll', updateHeader, { passive: true });
+    updateHeader();
+
+    // Accessible mobile menu.
+    const menuButton = select('.menu-button');
+    menuButton.addEventListener('click', () => {
+      const isOpen = siteHeader.classList.toggle('menu-active');
+      document.body.classList.toggle('menu-open', isOpen);
+      menuButton.setAttribute('aria-expanded', String(isOpen));
+      menuButton.setAttribute('aria-label', isOpen ? '關閉選單' : '開啟選單');
+    });
+    selectAll('.desktop-nav a').forEach((link) => link.addEventListener('click', () => {
+      siteHeader.classList.remove('menu-active');
+      document.body.classList.remove('menu-open');
+      menuButton.setAttribute('aria-expanded', 'false');
+    }));
+
+    // Animated business metrics.
+    const metricObserver = new IntersectionObserver(([entry], observer) => {
+      if (!entry.isIntersecting) return;
+      selectAll('[data-count]').forEach((element) => {
+        const target = Number(element.dataset.count);
+        const start = performance.now();
+        const animate = (time) => {
+          const progress = Math.min((time - start) / 1200, 1);
+          element.textContent = Math.round(target * (1 - Math.pow(1 - progress, 3)));
+          if (progress < 1) requestAnimationFrame(animate);
+        };
+        requestAnimationFrame(animate);
+      });
+      observer.disconnect();
+    }, { threshold: 0.5 });
+    metricObserver.observe(select('.metrics'));
+
+    // Talent filters.
+    selectAll('.filter-button').forEach((button) => button.addEventListener('click', () => {
+      selectAll('.filter-button').forEach((item) => item.classList.remove('is-active'));
+      button.classList.add('is-active');
+      selectAll('.talent-card').forEach((card) => {
+        card.hidden = button.dataset.filter !== 'all' && card.dataset.category !== button.dataset.filter;
+      });
+    }));
+
+    // Two-way inquiry form tabs and local demo confirmation.
+    selectAll('.form-tab').forEach((button) => button.addEventListener('click', () => {
+      selectAll('.form-tab').forEach((tab) => {
+        const active = tab === button;
+        tab.classList.toggle('is-active', active);
+        tab.setAttribute('aria-selected', String(active));
+      });
+      selectAll('.form-panel').forEach((panel) => panel.classList.toggle('is-active', panel.id === `${button.dataset.tab}-form`));
+    }));
+    const budget = select('#budget');
+    budget.addEventListener('input', () => select('#budget-output').textContent = `NT$ ${Number(budget.value).toLocaleString()}`);
+    selectAll('.form-panel').forEach((form) => form.addEventListener('submit', (event) => {
+      event.preventDefault();
+      const toast = select('.toast');
+      toast.classList.add('is-visible');
+      window.setTimeout(() => toast.classList.remove('is-visible'), 3200);
+    }));
+
+    // Native Canvas compass: low-cost alternative to an external Three.js dependency.
+    const canvas = select('#compass-canvas');
+    const context = canvas.getContext('2d');
+    const pointer = { x: 0, y: 0 };
+    let canvasWidth = 0;
+    let canvasHeight = 0;
+    function resizeCanvas() {
+      const ratio = Math.min(window.devicePixelRatio || 1, 1.5);
+      canvasWidth = window.innerWidth;
+      canvasHeight = window.innerHeight;
+      canvas.width = canvasWidth * ratio;
+      canvas.height = canvasHeight * ratio;
+      canvas.style.width = `${canvasWidth}px`;
+      canvas.style.height = `${canvasHeight}px`;
+      context.setTransform(ratio, 0, 0, ratio, 0, 0);
+    }
+    window.addEventListener('resize', resizeCanvas);
+    window.addEventListener('pointermove', (event) => {
+      pointer.x = (event.clientX / canvasWidth - 0.5) * 24;
+      pointer.y = (event.clientY / canvasHeight - 0.5) * 18;
+    }, { passive: true });
+    resizeCanvas();
+
+    const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    function drawCompass(time = 0) {
+      context.clearRect(0, 0, canvasWidth, canvasHeight);
+      const radius = Math.min(canvasWidth, canvasHeight) * (canvasWidth < 640 ? .23 : .3);
+      const centerX = canvasWidth * (canvasWidth < 800 ? .72 : .76) + pointer.x;
+      const centerY = canvasHeight * .44 + pointer.y;
+      context.save();
+      context.translate(centerX, centerY);
+      context.rotate(reducedMotion ? 0 : Math.sin(time * .00025) * .08);
+      [1, .73, .46].forEach((scale, index) => {
+        context.beginPath();
+        context.arc(0, 0, radius * scale, 0, Math.PI * 2);
+        context.strokeStyle = `rgba(80, 184, 236, ${.28 - index * .045})`;
+        context.lineWidth = index === 0 ? 1.2 : .8;
+        context.stroke();
+      });
+      context.rotate(-.42);
+      const gradient = context.createLinearGradient(0, -radius, 0, radius);
+      gradient.addColorStop(0, '#88dcff');
+      gradient.addColorStop(.5, '#2f95d3');
+      gradient.addColorStop(1, '#062d75');
+      context.beginPath();
+      context.moveTo(0, -radius * 1.08);
+      context.lineTo(radius * .09, radius * .12);
+      context.lineTo(0, radius * 1.12);
+      context.lineTo(-radius * .075, radius * .1);
+      context.closePath();
+      context.fillStyle = gradient;
+      context.shadowColor = 'rgba(77,190,245,.45)';
+      context.shadowBlur = 22;
+      context.fill();
+      context.restore();
+      if (!reducedMotion) requestAnimationFrame(drawCompass);
+    }
+    drawCompass();
+  </script>
+</body>
+</html>
